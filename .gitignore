@@ -1,0 +1,11 @@
+# Executables
+quiz0_alignup
+quiz0_qsort_mt
+quiz0_s-tree
+
+# Reference Helper
+tags
+cscope.*
+
+# Editor Configuration
+.vimrc
