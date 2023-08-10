@@ -1,7 +1,7 @@
 # Executables
-quiz0_alignup
-quiz0_qsort_mt
-quiz0_s-tree
+quiz0/alignup
+quiz0/qsort_mt
+quiz0/s-tree
 
 # Reference Helper
 tags

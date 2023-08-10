@@ -1,5 +1,5 @@
 CC := gcc
-STD := -std=c11
+STD := -std=gnu11
 CFLAGS = $(STD) -Wall -Wextra
 #CFLAGS += -g -fsanitize=address
 CFLAGS += -g -fsanitize=thread
