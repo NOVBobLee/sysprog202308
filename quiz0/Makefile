@@ -1,25 +1,38 @@
 CC := gcc
 STD := -std=gnu11
-CFLAGS = $(STD) -Wall -Wextra
+CFLAGS = $(STD) -Wall
 #CFLAGS += -g -fsanitize=address
-CFLAGS += -g -fsanitize=thread
+#CFLAGS += -g -fsanitize=thread
 
 LDFLAGS =
 LDFLAGS += -lpthread
 
-TARGET := qsort_mt
+SRC := align_up.c qsort_mt.c s_tree.c
+BIN := $(SRC:%.c=%)
 
 .PHONY: all clean format
-all: $(TARGET)
+all: $(BIN)
 
-$(TARGET): %: %.c
+align_up: %: %.c
+	$(CC) $(CFLAGS) -o $@ $^
+
+qsort_mt: %: %.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-test: $(TARGET)
-	./$(TARGET) -tv -f2 -h2 -n100
+s_tree: %: %.c
+	$(CC) $(CFLAGS) -o $@ $^
 
-format: $(TARGET).c
-	clang-format -i -style=file:../.clang-format $(TARGET).c
+test-align_up: align_up
+	./$<
+
+test-qsort_mt: qsort_mt
+	./$< -tv -f2 -h2 -n100
+
+test-s_tree: s_tree
+	./$<
+
+format:
+	clang-format -i -style=file:../.clang-format $(SRC)
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) $(BIN)
