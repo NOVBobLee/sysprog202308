@@ -341,7 +341,6 @@ again:
     /* Wait for work to be allocated. */
     verify(pthread_mutex_lock(&qs->mtx_st));
     while (qs->st == ts_idle)
-        // verify(HHHH);
         verify(pthread_cond_wait(&qs->cond_st, &qs->mtx_st));
     verify(pthread_mutex_unlock(&qs->mtx_st));
     if (qs->st == ts_term) {
@@ -361,7 +360,6 @@ again:
                 continue;
             verify(pthread_mutex_lock(&qs2->mtx_st));
             qs2->st = ts_term;
-            // verify(JJJJ);
             verify(pthread_cond_signal(&qs2->cond_st));
             verify(pthread_mutex_unlock(&qs2->mtx_st));
         }
