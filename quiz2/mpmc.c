@@ -134,7 +134,6 @@ static void *mpmc_find_cell(node_t *volatile *ptr, long i, handle_t *th)
                 th->spare = tmp;
             }
 
-            //tmp->id = ZBBB; /* next node's id */
             tmp->id = j + 1; /* next node's id */
 
             /* if true, then use this thread's node, else then thread has have
@@ -159,7 +158,6 @@ static void *mpmc_find_cell(node_t *volatile *ptr, long i, handle_t *th)
     __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
     /* now we get the needed cell */
-    //return &curr->cells[i & ZDDD];
     return &curr->cells[i & N_BITS];
 }
 
@@ -200,7 +198,6 @@ void mpmc_enqueue(mpmc_t *q, handle_t *th, void *v)
     /* else the counterpart pop thread has wait this cell, so we just change the
      * waiting value and wake it
      */
-    //*((int *) cv) = ZAAA;
     *((int *) cv) = 0;
     mpmc_futex_wake(cv, 1);
 }
@@ -211,7 +208,6 @@ void *mpmc_dequeue(mpmc_t *q, handle_t *th)
     int futex_addr = 1;
 
     /* the needed pop_index */
-    //long index = __atomic_fetch_add(&q->pop_index, ZCCC, __ATOMIC_SEQ_CST);
     long index = __atomic_fetch_add(&q->pop_index, 1, __ATOMIC_SEQ_CST);
 
     /* locate the needed cell */
