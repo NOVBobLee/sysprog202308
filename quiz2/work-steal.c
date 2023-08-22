@@ -168,7 +168,7 @@ atomic_bool done;
 static work_t *do_one_work(int id, work_t *work)
 {
     printf("work item %d running item %p\n", id, work);
-    return (*(work->code)) (work);
+    return (*(work->code))(work);
 }
 
 void do_work(int id, work_t *work)
