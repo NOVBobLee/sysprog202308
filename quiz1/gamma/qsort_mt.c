@@ -89,26 +89,26 @@ enum thread_state {
 
 /* Variant part passed to qsort invocations. */
 struct qsort {
-    enum thread_state st;   /* For coordinating work. */
-    struct common *common;  /* Common shared elements. */
-    void *a;                /* Array base. */
-    size_t n;               /* Number of elements. */
-    pthread_t id;           /* Thread id. */
-    mutex_t mtx_st;			/* For signalling state change. */
-    cond_t cond_st;			/* For signalling state change. */
+    enum thread_state st;  /* For coordinating work. */
+    struct common *common; /* Common shared elements. */
+    void *a;               /* Array base. */
+    size_t n;              /* Number of elements. */
+    pthread_t id;          /* Thread id. */
+    mutex_t mtx_st;        /* For signalling state change. */
+    cond_t cond_st;        /* For signalling state change. */
 };
 
 /* Invariant common part, shared across invocations. */
 struct common {
-    int swaptype;           /* Code to use for swapping */
-    size_t es;              /* Element size. */
-    void *thunk;            /* Thunk for qsort_r */
-    cmp_t *cmp;             /* Comparison function */
-    int nthreads;           /* Total number of pool threads. */
-    int idlethreads;        /* Number of idle threads in pool. */
-    int forkelem;           /* Minimum number of elements for a new thread. */
-    struct qsort *pool;     /* Fixed pool of threads. */
-    mutex_t mtx_al;			/* For allocating threads in the pool. */
+    int swaptype;       /* Code to use for swapping */
+    size_t es;          /* Element size. */
+    void *thunk;        /* Thunk for qsort_r */
+    cmp_t *cmp;         /* Comparison function */
+    int nthreads;       /* Total number of pool threads. */
+    int idlethreads;    /* Number of idle threads in pool. */
+    int forkelem;       /* Minimum number of elements for a new thread. */
+    struct qsort *pool; /* Fixed pool of threads. */
+    mutex_t mtx_al;     /* For allocating threads in the pool. */
 };
 
 static void *qsort_thread(void *p);
