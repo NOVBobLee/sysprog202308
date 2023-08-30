@@ -10,7 +10,7 @@ LDFLAGS += -lpthread
 SRC := align_up.c qsort_mt.c s_tree.c
 BIN := $(SRC:%.c=%)
 
-.PHONY: all clean format
+.PHONY: all clean test-align_up test-qsort_mt test-s_tree
 all: $(BIN)
 
 align_up: %: %.c
@@ -30,9 +30,6 @@ test-qsort_mt: qsort_mt
 
 test-s_tree: s_tree
 	./$<
-
-format:
-	clang-format -i -style=file:../.clang-format $(SRC)
 
 clean:
 	$(RM) $(BIN)
