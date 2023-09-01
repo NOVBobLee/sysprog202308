@@ -1,6 +1,9 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#ifdef SHOW_INC
+#include <stdio.h>
+#endif
 
 #include "cond.h"
 #include "futex.h"
@@ -88,7 +91,12 @@ static void *thread_func(void *ptr)
     struct node *self = ptr;
     bool bit = false;
 
+#ifdef SHOW_INC
+    int i;
+    for (i = 1; clock_wait(self->clock, i); ++i) {
+#else
     for (int i = 1; clock_wait(self->clock, i); ++i) {
+#endif
         if (self->parent)
             node_wait(self->parent);
 
@@ -101,7 +109,14 @@ static void *thread_func(void *ptr)
     }
 
     node_signal(self);
+#ifdef SHOW_INC
+    void *ret = malloc(sizeof(int));
+    if (ret != NULL)
+        *(int *) ret = i - 1;
+    return ret;
+#else
     return NULL;
+#endif
 }
 
 int main(void)
@@ -126,8 +141,18 @@ int main(void)
     clock_stop(&clock);
 
     for (int i = 0; i < N_NODES; ++i) {
+#ifdef SHOW_INC
+        void *ret = NULL;
+        if (pthread_join(threads[i], &ret) != 0) {
+            return EXIT_FAILURE;
+        } else if (ret != NULL) {
+            printf("[Thread %d] tick=%d\n", i, *(int *) ret);
+            free(ret);
+        }
+#else
         if (pthread_join(threads[i], NULL) != 0)
             return EXIT_FAILURE;
+#endif
     }
 
     return EXIT_SUCCESS;

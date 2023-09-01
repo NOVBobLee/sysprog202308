@@ -1,6 +1,8 @@
 CFLAGS := -std=c11 -Wall -g -O2 -D_GNU_SOURCE -fsanitize=thread
 LDFLAGS := -lpthread
 
+CFLAGS += -DSHOW_INC
+
 ALL := test_pthread test_linux
 
 all: $(ALL)
