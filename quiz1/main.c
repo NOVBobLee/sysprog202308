@@ -110,10 +110,10 @@ static void *thread_func(void *ptr)
 
     node_signal(self);
 #ifdef SHOW_INC
-    void *ret = malloc(sizeof(int));
+    int *ret = malloc(sizeof(int));
     if (ret != NULL)
-        *(int *) ret = i - 1;
-    return ret;
+        *ret = i - 1;
+    return (void *) ret;
 #else
     return NULL;
 #endif
