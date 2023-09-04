@@ -10,6 +10,7 @@
 #define mutex_trylock(m) (!pthread_mutex_trylock(m))
 #define mutex_lock pthread_mutex_lock
 #define mutex_unlock pthread_mutex_unlock
+#define mutex_destroy pthread_mutex_destroy
 
 #else
 
@@ -76,5 +77,8 @@ static inline void mutex_unlock(mutex_t *mutex)
     if (state & MUTEX_SLEEPING)
         futex_wake(&mutex->state, 1);
 }
+
+/* dummy */
+static inline void mutex_destroy(mutex_t *mutex) {}
 
 #endif

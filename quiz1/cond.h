@@ -10,6 +10,7 @@
 #define cond_wait(c, m) pthread_cond_wait(c, m)
 #define cond_signal(c, m) pthread_cond_signal(c)
 #define cond_broadcast(c, m) pthread_cond_broadcast(c)
+#define cond_destroy pthread_cond_destroy
 
 #else
 
@@ -62,5 +63,8 @@ static inline void cond_broadcast(cond_t *cond, mutex_t *mutex)
     fetch_add(&cond->seq, 1, relaxed);
     futex_requeue(&cond->seq, 1, &mutex->state);
 }
+
+/* dummy */
+static inline void cond_destroy(cond_t *cond) {}
 
 #endif
