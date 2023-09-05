@@ -11,6 +11,16 @@
 #define mutex_lock pthread_mutex_lock
 #define mutex_unlock pthread_mutex_unlock
 #define mutex_destroy pthread_mutex_destroy
+#define mutex_trylock_pi(m) (!pthread_mutex_trylock(m))
+#define mutex_lock_pi pthread_mutex_lock
+#define mutex_unlock_pi pthread_mutex_unlock
+
+#define mutexattr_t pthread_mutexattr_t
+#define mutexattr_init pthread_mutexattr_init
+#define mutexattr_destroy pthread_mutexattr_destroy
+#define mutexattr_setprotocol pthread_mutexattr_setprotocol
+#define PRIO_INHERIT PTHREAD_PRIO_INHERIT
+#define PRIO_NONE PTHREAD_PRIO_NONE
 
 #else
 
@@ -23,9 +33,18 @@ typedef struct {
     atomic int state;
 } mutex_t;
 
+typedef struct {
+    int protocol;
+} mutexattr_t;
+
 enum {
     MUTEX_LOCKED = 1 << 0,
     MUTEX_SLEEPING = 1 << 1,
+};
+
+enum {
+    PRIO_NONE = 0,
+    PRIO_INHERIT = 1 << 0,
 };
 
 #define MUTEX_INITIALIZER \
@@ -78,7 +97,17 @@ static inline void mutex_unlock(mutex_t *mutex)
         futex_wake(&mutex->state, 1);
 }
 
+static bool mutex_trylock_pi(mutex_t *mutex)
+{
+    return true;
+}
+static inline void mutex_lock_pi(mutex_t *mutex) {}
+static inline void mutex_unlock_pi(mutex_t *mutex) {}
+
 /* dummy */
 static inline void mutex_destroy(mutex_t *mutex) {}
+static inline void mutex_attr_init(mutexattr_t *attr) {}
+static inline void mutex_attr_destroy(mutexattr_t *attr) {}
+static inline void mutex_attr_setprotocol(mutexattr_t *attr, int protocol) {}
 
 #endif
