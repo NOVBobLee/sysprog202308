@@ -143,7 +143,7 @@ static void *task_l(void *arg)
     mutex_lock(&cs->lock);
 
     /* wake other tasks if they are waiting for task_l acquired lock */
-    store(&st->l_locked, 1, relaxed);
+    store(&st->l_locked, 1, release);
     futex_wake(&st->l_locked, N_TASKS);
 
     /* yield after all tasks are created */
