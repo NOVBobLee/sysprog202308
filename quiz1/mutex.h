@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define mutex_t pthread_mutex_t
-#define mutex_init(m) pthread_mutex_init(m, NULL)
+#define mutex_init(m, a) pthread_mutex_init(m, a)
 #define MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
 #define mutex_trylock(m) (!pthread_mutex_trylock(m))
 #define mutex_lock pthread_mutex_lock
@@ -52,7 +52,7 @@ enum {
         .state = 0        \
     }
 
-static inline void mutex_init(mutex_t *mutex)
+static inline void mutex_init(mutex_t *mutex, mutexattr_t *attr)
 {
     atomic_init(&mutex->state, 0);
 }

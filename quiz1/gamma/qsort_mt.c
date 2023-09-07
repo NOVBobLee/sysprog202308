@@ -130,12 +130,12 @@ void qsort_mt(void *a,
         goto f1;
     errno = 0;
     /* Try to initialize the resources we need. */
-    mutex_init(&c.mtx_al);
+    mutex_init(&c.mtx_al, NULL);
     if ((c.pool = calloc(maxthreads, sizeof(struct qsort))) == NULL)
         goto f2;
     for (islot = 0; islot < maxthreads; islot++) {
         qs = &c.pool[islot];
-        mutex_init(&qs->mtx_st);
+        mutex_init(&qs->mtx_st, NULL);
         cond_init(&qs->cond_st);
 
         qs->st = ts_idle;
