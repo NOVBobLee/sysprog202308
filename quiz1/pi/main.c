@@ -7,7 +7,7 @@
 #include "mutex.h"
 #include "spinlock.h"  // spin_hint()
 
-#define N_TASKS 4  // H, M, L, control
+#define N_TASKS 3  // H, M, L
 
 struct cs {
     bool h_touched;
@@ -20,7 +20,7 @@ struct state {
     atomic bool stop;
 
     atomic int n_finished;
-    int finished_order[N_TASKS - 1];
+    int finished_order[N_TASKS];
 };
 
 struct ctx {
@@ -147,8 +147,7 @@ static void *task_l(void *arg)
     futex_wake(&st->l_locked, N_TASKS);
 
     /* yield after all tasks are created */
-    // usleep(100);
-    while (!load(&st->all_created, relaxed))
+    while (!load(&st->all_created, acquire))
         spin_hint();
     sched_yield();
 
@@ -158,21 +157,11 @@ static void *task_l(void *arg)
     return NULL;
 }
 
-static void *control_task(void *arg)
-{
-    struct state *st = &((struct ctx *) arg)->st;
-    store(&st->all_created, true, release);
-
-    sleep(1);
-    store(&st->stop, true, relaxed);
-    return NULL;
-}
-
 int main(void)
 {
-    mywork_t works[N_TASKS] = {task_l, task_m, task_h, control_task};
-    int priority[N_TASKS] = {5, 10, 15, 20}; /* 1 <= priority <= 99 */
-    pthread_t th[N_TASKS];
+    mywork_t works[N_TASKS] = {task_l, task_m, task_h};
+    int priority[N_TASKS] = {5, 10, 15};
+    pthread_t th[N_TASKS], self;
     pthread_attr_t attr;
     struct sched_param param;
     struct ctx ctx;
@@ -185,12 +174,21 @@ int main(void)
     /* run until yield or preempted by higher priority */
     pthread_attr_setschedpolicy(&attr, SCHED_RR);
 
+    /* tune main thread */
+    self = pthread_self();
+    param.sched_priority = 20;
+    pthread_setschedparam(self, SCHED_RR, &param);
+
     for (int i = 0; i < N_TASKS; ++i) {
         /* set thread priority */
         param.sched_priority = priority[i];
         pthread_attr_setschedparam(&attr, &param);
         pthread_create(&th[i], &attr, works[i], (void *) &ctx);
     }
+    store(&ctx.st.all_created, true, release);
+
+    sleep(1);
+    store(&ctx.st.stop, true, release);
 
     for (int i = 0; i < N_TASKS; ++i)
         pthread_join(th[i], NULL);
