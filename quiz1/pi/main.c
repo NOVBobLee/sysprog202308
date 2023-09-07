@@ -8,6 +8,7 @@
 #include "spinlock.h"  // spin_hint()
 
 #define N_TASKS 3  // H, M, L
+#define TH_SCHED SCHED_FIFO
 
 struct cs {
     bool h_touched;
@@ -172,12 +173,12 @@ int main(void)
     /* use new attr instead of inherited from parent thread attr */
     pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     /* run until yield or preempted by higher priority */
-    pthread_attr_setschedpolicy(&attr, SCHED_RR);
+    pthread_attr_setschedpolicy(&attr, TH_SCHED);
 
     /* tune main thread */
     self = pthread_self();
     param.sched_priority = 20;
-    pthread_setschedparam(self, SCHED_RR, &param);
+    pthread_setschedparam(self, TH_SCHED, &param);
 
     for (int i = 0; i < N_TASKS; ++i) {
         /* set thread priority */
