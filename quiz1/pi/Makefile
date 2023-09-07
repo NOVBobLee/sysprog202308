@@ -6,7 +6,9 @@ _HEADERS := atomic.h futex.h mutex.h spinlock.h
 HEADERS := $(addprefix $(INC)/,$(_HEADERS))
 CFLAGS += -I$(INC)
 
-ALL := test_pthread test_linux
+#CFLAGS += -DUSE_PI
+
+ALL := test_pthread #test_linux
 
 
 .PHONY: all clean
@@ -18,21 +20,10 @@ test_%: main.c $(HEADERS)
 test_pthread: CFLAGS += -DUSE_PTHREADS
 test_linux: CFLAGS += -DUSE_LINUX
 
-# Test suite
-NAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-    PRINTF = printf
-else
-    PRINTF = env printf
-endif
-PASS_COLOR = \e[32;01m
-NO_COLOR = \e[0m
-notice = $(PRINTF) "$(PASS_COLOR)$(strip $1)$(NO_COLOR)\n"
-
 check: $(ALL)
 	@$(foreach t,$^,\
-	    $(PRINTF) "Running $(t) ... "; \
-	    ./$(t) && $(call notice, [OK]); \
+	    printf "Running $(t) ...\n"; \
+	    sudo sh -c "taskset -c 0 ./$(t)" \
 	)
 
 clean:
