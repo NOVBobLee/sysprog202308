@@ -1,7 +1,5 @@
 #pragma once
 
-#if USE_LINUX
-
 #include <limits.h>
 #include <linux/futex.h>
 #include <sys/syscall.h>
@@ -26,4 +24,3 @@ static inline void futex_requeue(atomic int *futex,
 {
     syscall(SYS_futex, futex, FUTEX_REQUEUE_PRIVATE, limit, INT_MAX, other);
 }
-#endif
