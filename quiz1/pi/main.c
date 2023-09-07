@@ -73,7 +73,7 @@ enum task_idx {
     TASK_H = 2,
 };
 
-/* put badge on a list in finished-order */
+/* record the finished order */
 void task_finished(struct state *st, enum task_idx idx)
 {
     int order = fetch_add(&st->n_finished, 1, acquire);
@@ -108,11 +108,9 @@ static void *task_h(void *arg)
         futex_wait(&st->l_locked, 0);
 
     mutex_lock(&cs->lock);
-
-    /* if task_m, task_l are still running */
+    /* if task_m, task_l are still runnable */
     if (!load(&st->stop, acquire))
         cs->h_touched = true;
-
     mutex_unlock(&cs->lock);
 
     task_finished(st, TASK_H);
