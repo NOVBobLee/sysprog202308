@@ -16,6 +16,7 @@ struct cs {
 
 struct state {
     atomic int l_locked;
+    atomic bool all_created;
     atomic bool stop;
 
     atomic int n_finished;
@@ -49,6 +50,7 @@ void cs_cleanup(struct cs *cs)
 void st_init(struct state *st)
 {
     st->l_locked = 0;
+    st->all_created = false;
     st->n_finished = 0;
     st->stop = false;
 }
@@ -94,16 +96,11 @@ void print_ctx(struct ctx *ctx)
 
 typedef void *(*mywork_t)(void *);
 
-atomic bool h_created = false;
-atomic bool m_created = false;
-
 static void *task_h(void *arg)
 {
     struct ctx *ctx = (struct ctx *) arg;
     struct cs *cs = &ctx->cs;
     struct state *st = &ctx->st;
-
-    store(&h_created, true, relaxed);
 
     /* wait until task_l acquired lock */
     if (0 == load(&st->l_locked, acquire))
@@ -125,8 +122,6 @@ static void *task_m(void *arg)
 {
     struct ctx *ctx = (struct ctx *) arg;
     struct state *st = &ctx->st;
-
-    store(&m_created, true, relaxed);
 
     /* wait until task_l acquired lock */
     if (0 == load(&st->l_locked, acquire))
@@ -151,9 +146,9 @@ static void *task_l(void *arg)
     store(&st->l_locked, 1, relaxed);
     futex_wake(&st->l_locked, N_TASKS);
 
-    /* yield */
+    /* yield after all tasks are created */
     // usleep(100);
-    while (!load(&m_created, relaxed))
+    while (!load(&st->all_created, relaxed))
         spin_hint();
     sched_yield();
 
@@ -166,6 +161,8 @@ static void *task_l(void *arg)
 static void *control_task(void *arg)
 {
     struct state *st = &((struct ctx *) arg)->st;
+    store(&st->all_created, true, release);
+
     sleep(1);
     store(&st->stop, true, relaxed);
     return NULL;
