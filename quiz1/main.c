@@ -17,7 +17,7 @@ struct clock {
 
 static void clock_init(struct clock *clock)
 {
-    mutex_init(&clock->mutex);
+    mutex_init(&clock->mutex, NULL);
     cond_init(&clock->cond);
     clock->ticks = 0;
 }
@@ -64,7 +64,7 @@ static void node_init(struct clock *clock,
 {
     node->clock = clock;
     node->parent = parent;
-    mutex_init(&node->mutex);
+    mutex_init(&node->mutex, NULL);
     cond_init(&node->cond);
     node->ready = false;
 }
