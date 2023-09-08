@@ -212,9 +212,13 @@ FAILED:
 static inline void _mutex_unlock_pi(mutex_t *mutex)
 {
     pid_t tid = gettid();
+
+    if (compare_exchange_strong(&mutex->state, &tid, 0, release, relaxed))
+        return;
+
     /* Need futex (kernel) when it contains FUTEX_WAITERS */
-    if (!compare_exchange_strong(&mutex->state, &tid, 0, release, relaxed))
-        futex_unlock_pi(&mutex->state);
+    futex_unlock_pi(&mutex->state);
+    thread_fence(&mutex->state, release);
 }
 
 /* dummy */
