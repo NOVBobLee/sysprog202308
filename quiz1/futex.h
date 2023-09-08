@@ -5,6 +5,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#define atomic _Atomic
+
 /* Atomically check if '*futex == value', and if so, go to sleep */
 static inline void futex_wait(atomic int *futex, int value)
 {
