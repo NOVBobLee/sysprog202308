@@ -39,3 +39,9 @@ static inline void futex_unlock_pi(atomic int *futex)
 {
     syscall(SYS_futex, futex, FUTEX_UNLOCK_PI_PRIVATE);
 }
+
+/* Try to acquire lock in kernel space with PI support */
+static inline long futex_trylock_pi(atomic int *futex)
+{
+    return syscall(SYS_futex, futex, FUTEX_TRYLOCK_PI_PRIVATE);
+}
