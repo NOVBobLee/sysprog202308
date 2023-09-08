@@ -53,12 +53,12 @@ enum {
     PRIO_INHERIT = 1 << 0,
 };
 
-static inline void mutex_attr_init(mutexattr_t *attr)
+static inline void mutexattr_init(mutexattr_t *attr)
 {
     attr->protocol = PRIO_NONE;
 }
 
-static inline void mutex_attr_setprotocol(mutexattr_t *attr, int protocol)
+static inline void mutexattr_setprotocol(mutexattr_t *attr, int protocol)
 {
     attr->protocol = protocol;
 }
@@ -164,6 +164,6 @@ static inline void _mutex_unlock_pi(mutex_t *mutex) {}
 
 /* dummy */
 static inline void mutex_destroy(mutex_t *mutex) {}
-static inline void mutex_attr_destroy(mutexattr_t *attr) {}
+static inline void mutexattr_destroy(mutexattr_t *attr) {}
 
 #endif
