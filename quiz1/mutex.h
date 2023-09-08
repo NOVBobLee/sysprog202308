@@ -155,12 +155,67 @@ static inline void _mutex_unlock(mutex_t *mutex)
         futex_wake(&mutex->state, 1);
 }
 
+#define STALE_STATE (FUTEX_WAITERS | FUTEX_OWNER_DIED)
+
 static bool _mutex_trylock_pi(mutex_t *mutex)
 {
-    return true;
+    pid_t tid = gettid();
+    int zero = 0;
+
+    if (compare_exchange_strong(&mutex->state, &zero, tid, acquire, relaxed))
+        return true;
+
+    if (load(&mutex->state, relaxed) & STALE_STATE) {
+        if (0 == futex_trylock_pi(&mutex->state)) {
+            thread_fence(&mutex->state, acquire);
+            return true;
+        }
+    }
+
+    return false;
 }
-static inline void _mutex_lock_pi(mutex_t *mutex) {}
-static inline void _mutex_unlock_pi(mutex_t *mutex) {}
+
+/* Specified for _mutex_lock_pi() using */
+static bool _mutex_trylock_pi_loop(mutex_t *mutex)
+{
+    int zero = 0;
+    pid_t tid = gettid();
+
+    /* cheaper than compare_exchange() */
+    if (0 != load(&mutex->state, acquire))
+        return false;
+
+    /* loop exists in _mutex_lock_pi() */
+    return compare_exchange_weak(&mutex->state, &zero, tid, acquire, relaxed);
+}
+
+static inline void _mutex_lock_pi(mutex_t *mutex)
+{
+    int state = load(&mutex->state, relaxed);
+
+    /* Need futex (kernel) when it contains stale state */
+    if (state & STALE_STATE)
+        goto FAILED;
+
+    for (int i = 0; i < MUTEX_SPINS; ++i) {
+        if (_mutex_trylock_pi_loop(mutex))
+            return;
+        spin_hint();
+    }
+
+FAILED:
+    futex_lock_pi(&mutex->state);
+
+    thread_fence(&mutex->state, acquire);
+}
+
+static inline void _mutex_unlock_pi(mutex_t *mutex)
+{
+    pid_t tid = gettid();
+    /* Need futex (kernel) when it contains FUTEX_WAITERS */
+    if (!compare_exchange_strong(&mutex->state, &tid, 0, release, relaxed))
+        futex_unlock_pi(&mutex->state);
+}
 
 /* dummy */
 static inline void mutex_destroy(mutex_t *mutex) {}

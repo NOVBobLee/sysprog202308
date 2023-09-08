@@ -6,9 +6,9 @@ _HEADERS := atomic.h futex.h mutex.h spinlock.h
 HEADERS := $(addprefix $(INC)/,$(_HEADERS))
 CFLAGS += -I$(INC)
 
-#CFLAGS += -DUSE_PI
+CFLAGS += -DUSE_PI
 
-ALL := test_pthread #test_linux
+ALL := test_pthread test_linux
 
 
 .PHONY: all clean
