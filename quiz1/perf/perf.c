@@ -11,81 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-
-#ifdef PERF_skinny
-#include "skinny_mutex.h"
-#else
 #include <pthread.h>
-#endif
-
-#if defined(PERF_pthreads)
-
-typedef pthread_mutex_t mutex_t;
-
-static int mutex_init(mutex_t *mutex)
-{
-    return pthread_mutex_init(mutex, NULL);
-}
-
-#define mutex_destroy pthread_mutex_destroy
-#define mutex_lock pthread_mutex_lock
-#define mutex_unlock pthread_mutex_unlock
-
-#elif defined(PERF_skinny)
-
-typedef skinny_mutex_t mutex_t;
-
-#define mutex_init skinny_mutex_init
-#define mutex_destroy skinny_mutex_destroy
-#define mutex_lock skinny_mutex_lock
-#define mutex_unlock skinny_mutex_unlock
-
-#elif defined(PERF_spinlock)
-
-#ifdef __APPLE__
-typedef int pthread_spinlock_t;
-
-static int pthread_spin_init(pthread_spinlock_t *lock, int pshared)
-{
-    __asm__ __volatile__("" ::: "memory");
-    *lock = 0;
-    return 0;
-}
-
-static int pthread_spin_destroy(pthread_spinlock_t *lock)
-{
-    return 0;
-}
-
-static int pthread_spin_lock(pthread_spinlock_t *lock)
-{
-    while (1) {
-        if (__sync_bool_compare_and_swap(lock, 0, 1))
-            return 0;
-        sched_yield();
-    }
-}
-
-static int pthread_spin_unlock(pthread_spinlock_t *lock)
-{
-    __asm__ __volatile__("" ::: "memory");
-    *lock = 0;
-    return 0;
-}
-#endif
-
-typedef pthread_spinlock_t mutex_t;
-
-static int mutex_init(mutex_t *mutex)
-{
-    return pthread_spin_init(mutex, PTHREAD_PROCESS_PRIVATE);
-}
-
-#define mutex_destroy pthread_spin_destroy
-#define mutex_lock pthread_spin_lock
-#define mutex_unlock pthread_spin_unlock
-
-#endif
+#include "mutex.h"
 
 struct test_results {
     int reps;
@@ -106,7 +33,7 @@ static void lock_unlock(struct test_results *res)
     mutex_t mutex;
     int i;
 
-    assert(!mutex_init(&mutex));
+    assert(!mutex_init(&mutex, NULL));
 
     res->start = now_usecs();
 
@@ -210,7 +137,7 @@ static void contention(struct test_results *res)
     int i;
 
     for (i = 0; i < CONTENTION_MUTEX_COUNT; i++)
-        assert(!mutex_init(&info.mutexes[i]));
+        assert(!mutex_init(&info.mutexes[i], NULL));
 
     assert(!pthread_mutex_init(&info.ready_mutex, NULL));
     assert(!pthread_cond_init(&info.ready_cond, NULL));
