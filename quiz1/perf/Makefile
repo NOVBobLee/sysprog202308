@@ -1,4 +1,4 @@
-CFLAGS := -std=c11 -Wall -g -O2 -D_GNU_SOURCE -fsanitize=thread
+CFLAGS := -std=c11 -Wall -g -O2 -fsanitize=thread
 LDFLAGS := -lpthread
 
 INC := ..
