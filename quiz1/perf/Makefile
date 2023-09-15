@@ -1,5 +1,7 @@
-CFLAGS := -std=c11 -Wall -g -O2 -fsanitize=thread
+CFLAGS := -std=c11 -Wall -O2
 LDFLAGS := -lpthread
+
+CFLAGS += -g -fsanitize=thread
 
 INC := ..
 _HEADERS := atomic.h futex.h mutex.h spinlock.h
