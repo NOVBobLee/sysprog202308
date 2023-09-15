@@ -35,8 +35,8 @@ struct _mutex_t {
     atomic int state;
     int protocol;
     bool (*trylock)(mutex_t *);
-    void (*lock)(mutex_t *);
-    void (*unlock)(mutex_t *);
+    int (*lock)(mutex_t *);
+    int (*unlock)(mutex_t *);
 };
 
 typedef struct {
@@ -53,14 +53,16 @@ enum {
     PRIO_INHERIT = 1 << 0,
 };
 
-static inline void mutexattr_init(mutexattr_t *attr)
+static inline int mutexattr_init(mutexattr_t *attr)
 {
     attr->protocol = PRIO_NONE;
+    return 0;
 }
 
-static inline void mutexattr_setprotocol(mutexattr_t *attr, int protocol)
+static inline int mutexattr_setprotocol(mutexattr_t *attr, int protocol)
 {
     attr->protocol = protocol;
+    return 0;
 }
 
 static bool _mutex_trylock(mutex_t *);
@@ -76,7 +78,7 @@ static inline void _mutex_unlock_pi(mutex_t *);
         .lock = _mutex_lock, .unlock = _mutex_unlock                  \
     }
 
-static inline void mutex_init(mutex_t *mutex, mutexattr_t *attr)
+static inline int mutex_init(mutex_t *mutex, mutexattr_t *attr)
 {
     atomic_init(&mutex->state, 0);
 
@@ -98,6 +100,7 @@ static inline void mutex_init(mutex_t *mutex, mutexattr_t *attr)
         mutex->unlock = _mutex_unlock;
         break;
     }
+    return 0;
 }
 
 static bool mutex_trylock(mutex_t *mutex)
@@ -105,14 +108,16 @@ static bool mutex_trylock(mutex_t *mutex)
     return mutex->trylock(mutex);
 }
 
-static inline void mutex_lock(mutex_t *mutex)
+static inline int mutex_lock(mutex_t *mutex)
 {
     mutex->lock(mutex);
+    return 0;
 }
 
-static inline void mutex_unlock(mutex_t *mutex)
+static inline int mutex_unlock(mutex_t *mutex)
 {
     mutex->unlock(mutex);
+    return 0;
 }
 
 static bool _mutex_trylock(mutex_t *mutex)
@@ -221,8 +226,14 @@ static inline void _mutex_unlock_pi(mutex_t *mutex)
     thread_fence(&mutex->state, release);
 }
 
-/* dummy */
-static inline void mutex_destroy(mutex_t *mutex) {}
-static inline void mutexattr_destroy(mutexattr_t *attr) {}
+static inline int mutex_destroy(mutex_t *mutex)
+{
+    return 0;
+}
+
+static inline int mutexattr_destroy(mutexattr_t *attr)
+{
+    return 0;
+}
 
 #endif
