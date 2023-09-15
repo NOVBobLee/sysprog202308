@@ -35,8 +35,8 @@ struct _mutex_t {
     atomic int state;
     int protocol;
     bool (*trylock)(mutex_t *);
-    int (*lock)(mutex_t *);
-    int (*unlock)(mutex_t *);
+    void (*lock)(mutex_t *);
+    void (*unlock)(mutex_t *);
 };
 
 typedef struct {
