@@ -8,7 +8,7 @@ _HEADERS := atomic.h futex.h mutex.h spinlock.h
 HEADERS := $(addprefix $(INC)/,$(_HEADERS))
 CFLAGS += -I$(INC)
 
-ALL := perf_pthread perf_linux
+ALL := perf_pthread perf_linux test_cache_ld test_cache_cas
 
 
 .PHONY: all clean
@@ -25,6 +25,12 @@ perf: $(ALL)
 	    printf "Running $(t) ...\n"; \
 	    sudo sh -c "taskset -c 0,1 ./$(t)" \
 	)
+
+test_cache_%: test_cache.c ../atomic.h ../spinlock.h
+	$(CC) $(CFLAGS) test_cache.c -o $@ $(LDFLAGS)
+
+test_cache_ld: CFLAGS += -DTEST_LD
+test_cache_cas: CFLAGS += -DTEST_CAS
 
 clean:
 	$(RM) $(ALL)

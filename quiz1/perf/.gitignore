@@ -1,2 +1,2 @@
-perf_linux
-perf_pthread
+perf_*
+test_cache_*
